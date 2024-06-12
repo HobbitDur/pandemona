@@ -33,7 +33,6 @@ if __name__ == '__main__':
         list_to_analyze = glob.glob(os.path.join(input_folder, "*.bin"))
         reading_pandemona = False
 
-    print(list_to_analyze)
     for file in list_to_analyze:
         if 'm000' in file:
             bin_data = m000bin()
