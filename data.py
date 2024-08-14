@@ -159,7 +159,7 @@ class BinManager():
                 entry.text = self.font_mgmt.translate_hex_to_str(raw_data_text)
                 index += entry.ENTRY_SIZE
 
-    def write_bin_file(self, file_bin, file_msg):
+    def write_bin_file(self, file_bin, file_msg, file_mngrp):
         for data in self.bin.list_data:
             for entry in data.entries:
                 self.file_bin_data.extend(entry.text_offset)
@@ -176,7 +176,6 @@ class BinManager():
             file.write(self.file_msg_data)
 
         # MNGRP
-        file_mngrp = os.path.join("OutputFiles", "mngrp.bin")
         with open(file_mngrp, "rb") as file:
             self.file_mngrp_data.extend(file.read())
 
@@ -200,11 +199,11 @@ class BinManager():
                 entry.text = self.font_mgmt.translate_str_to_hex(text_read)
                 entry.text.extend([0x00])  # Adding the 0x00 that have been removed to note the end of the string
                 entry.text_offset = text_offset.to_bytes(2, byteorder='little')
-                entry.amount_received = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1])
-                entry.unk = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2, byteorder='little')
-                entry.input_id = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
-                entry.amount_required = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
-                entry.output_id = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
+                entry.input_id = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
+                entry.amount_required = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1][:-1])
+                entry.output_id = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
+                entry.amount_received = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
+                entry.unk = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2, byteorder='little')
                 text_offset+=len(entry.text)
                 current_line += 6
             current_line += 1  # The \n alone added
@@ -217,20 +216,12 @@ class BinManager():
                 str_entry = ""
                 str_entry += f"Entry n°{nb_entry}\n"
                 str_entry += f"Text{self.CHAR_SEP}{entry.text}\n"
-                str_entry += f"Amount received{self.CHAR_SEP}{entry.amount_received}\n"
-                str_entry += f"unk{self.CHAR_SEP}{entry.unk}\n"
                 str_entry += f"Input ID{self.CHAR_SEP}{entry.input_id}\n"
                 str_entry += f"Amount required{self.CHAR_SEP}{entry.amount_required}\n"
                 str_entry += f"Output ID{self.CHAR_SEP}{entry.output_id}\n"
+                str_entry += f"Amount received{self.CHAR_SEP}{entry.amount_received}\n"
+                str_entry += f"unk{self.CHAR_SEP}{entry.unk}\n"
                 str_output += str_entry
             str_output += '-----------------------------------------------------------------\n'
         with open(os.path.join(path_output, self.bin.name + '.pandemona'), "w") as file:
             file.write(str_output)
-
-
-    def write_to_mngrp(self, file_mngrp):
-        with open(file_mngrp, "rb") as file:
-            file.write(self.file_mngrp_data)
-
-        with open(file_mngrp, "rb") as file:
-            file.write(self.file_mngrp_data)
