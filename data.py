@@ -50,7 +50,8 @@ class m000bin():
         self.list_data = (self.t_mag_rf, self.i_mag_rf, self.f_mag_rf, self.l_mag_rf, self.time_mag_rf, self.st_mag_rf, self.supt_mag_rf, self.forbid_mag_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.SPELL
-
+        self.mngrp_bin_offset = 0x21F000
+        self.mngrp_msg_offset = 0x221800
 
 @dataclass
 class m001bin():
@@ -69,6 +70,8 @@ class m001bin():
         self.list_data = (self.recov_med_rf, self.st_med_rf, self.amo_rf, self.forbid_med_rf, self.gfrecov_med_rf, self.gfabl_med_rf, self.tool_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.ITEM
+        self.mngrp_bin_offset = 0x21F800
+        self.mngrp_msg_offset = 0x223000
 
 
 @dataclass
@@ -82,6 +85,8 @@ class m002bin():
         self.list_data = (self.mid_mag_rf, self.high_mag_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.SPELL
+        self.mngrp_bin_offset = 0x220000
+        self.mngrp_msg_offset = 0x225000
 
 
 @dataclass
@@ -93,6 +98,8 @@ class m003bin():
         self.list_data = (self.med_lv_up,)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.ITEM
+        self.mngrp_bin_offset = 0x220800
+        self.mngrp_msg_offset = 0x225800
 
 
 @dataclass
@@ -103,6 +110,8 @@ class m004bin():
         self.list_data = (self.card_mod,)
         self.input_id = TypeId.CARD
         self.output_id = TypeId.ITEM
+        self.mngrp_bin_offset = 0x221000
+        self.mngrp_msg_offset = 0x226000
 
 
 class BinManager():
@@ -112,6 +121,7 @@ class BinManager():
         self.bin = bin
         self.file_bin_data = bytearray()
         self.file_msg_data = bytearray()
+        self.file_mngrp_data = bytearray()
         self.font_mgmt = FontManagement()
         if bin.input_id == TypeId.CARD:
             self.input_table = game_data.card_values
@@ -165,6 +175,16 @@ class BinManager():
         with open(file_msg, "wb") as file:
             file.write(self.file_msg_data)
 
+        # MNGRP
+        file_mngrp = os.path.join("OutputFiles", "mngrp.bin")
+        with open(file_mngrp, "rb") as file:
+            self.file_mngrp_data.extend(file.read())
+
+        self.file_mngrp_data[self.bin.mngrp_bin_offset:] = self.file_bin_data
+        self.file_mngrp_data[self.bin.mngrp_msg_offset:] = self.file_msg_data
+        with open(file_mngrp, "wb") as file:
+            file.write(self.file_mngrp_data)
+
     def read_pandemona_file(self, path_input):
         with open(os.path.join(path_input, self.bin.name + '.pandemona'), "r") as file:
             str_read = file.readlines()
@@ -206,3 +226,11 @@ class BinManager():
             str_output += '-----------------------------------------------------------------\n'
         with open(os.path.join(path_output, self.bin.name + '.pandemona'), "w") as file:
             file.write(str_output)
+
+
+    def write_to_mngrp(self, file_mngrp):
+        with open(file_mngrp, "rb") as file:
+            file.write(self.file_mngrp_data)
+
+        with open(file_mngrp, "rb") as file:
+            file.write(self.file_mngrp_data)
