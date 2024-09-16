@@ -170,6 +170,7 @@ class BinManager():
             str_read = file.readlines()
 
         current_line = 0
+        text_offset = 0
         for index_data, data in enumerate(self.bin.list_data):
             current_line += 1  # Line of data description ignored
             for nb_entry, entry in enumerate(data.entries):
@@ -178,13 +179,14 @@ class BinManager():
                 text_read = str_read[current_line].split(f'{self.CHAR_SEP}')[1][:-1]
                 entry.text = self.font_mgmt.translate_str_to_hex(text_read)
                 entry.text.extend([0x00])  # Adding the 0x00 that have been removed to note the end of the string
-                entry.text_offset = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2, byteorder='little')
-                entry.amount_received = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1][:-1])
-                entry.unk = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2, byteorder='little')
-                entry.input_id = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
-                entry.amount_required = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1])
-                entry.output_id = int(str_read[current_line + 6].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
-                current_line += 7
+                entry.text_offset = text_offset.to_bytes(2, byteorder='little')
+                entry.amount_received = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1])
+                entry.unk = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2, byteorder='little')
+                entry.input_id = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
+                entry.amount_required = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
+                entry.output_id = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
+                text_offset+=len(entry.text)
+                current_line += 6
             current_line += 1  # The \n alone added
 
     def write_pandemona_file(self, path_output):
@@ -195,13 +197,12 @@ class BinManager():
                 str_entry = ""
                 str_entry += f"Entry n°{nb_entry}\n"
                 str_entry += f"Text{self.CHAR_SEP}{entry.text}\n"
-                str_entry += f"Text offset (don't touch if you don't know what you are doing){self.CHAR_SEP}{entry.text_offset}\n"
                 str_entry += f"Amount received{self.CHAR_SEP}{entry.amount_received}\n"
                 str_entry += f"unk{self.CHAR_SEP}{entry.unk}\n"
                 str_entry += f"Input ID{self.CHAR_SEP}{entry.input_id}\n"
                 str_entry += f"Amount required{self.CHAR_SEP}{entry.amount_required}\n"
                 str_entry += f"Output ID{self.CHAR_SEP}{entry.output_id}\n"
                 str_output += str_entry
-            str_output += '\n'
+            str_output += '-----------------------------------------------------------------\n'
         with open(os.path.join(path_output, self.bin.name + '.pandemona'), "w") as file:
             file.write(str_output)
