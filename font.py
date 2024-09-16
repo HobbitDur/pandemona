@@ -1,4 +1,6 @@
 import os
+
+
 class FontManagement():
     CHARACTER_LIST = ["Squall", "Zell", "Irvine", "Quistis", "Rinoa", "Selphie", "Seifer", "Edea", "Laguna", "Kiros", "Ward", "Angelo",
                       "Griever", "Boko"]
