@@ -1,5 +1,11 @@
 import os
 class FontManagement():
+    CHARACTER_LIST = ["Squall", "Zell", "Irvine", "Quistis", "Rinoa", "Selphie", "Seifer", "Edea", "Laguna", "Kiros", "Ward", "Angelo",
+                      "Griever", "Boko"]
+    COLOR_LIST = ["Darkgrey", "Grey", "Yellow", "Red", "Green", "Blue", "Purple", "White",
+                  "DarkgreyBlink", "GreyBlink", "YellowBlink", "RedBlink", "GreenBlink", "BlueBlink", "PurpleBlink", "WhiteBlink"]
+    LOCATION_LIST = ["Galbadia", "Esthar", "Balamb", "Dollet", "Timber", "Trabia", "Centra", "Horizon"]
+
     def __init__(self):
         self.translate_hex_to_str_table = []
         self.__init_hex_to_str_table()
@@ -22,7 +28,11 @@ class FontManagement():
         encode_list = []
         while c < str_size:
             char = string[c]
-            if char == '\n':  # \n{NewPage}\n,\n
+            if char == '\\':
+                encode_list.append(0x02)
+                c += 2
+                continue
+            elif char == '\n':  # \n{NewPage}\n,\n
                 if '{NewPage}' in string[c + 1:c + 10]:
                     encode_list.append(0x01)
                     c += 10

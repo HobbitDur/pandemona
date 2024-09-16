@@ -34,7 +34,7 @@ class m000bin():
         self.t_mag_rf = Data(name='t_mag_rf', offset=0x0, description='Item to Thunder/Wind Magic', nb_entries=7, entries=[Entry() for _ in range(7)])
         self.i_mag_rf = Data(name='i_mag_rf', offset=0x38, description='Item to Ice/Water Magic', nb_entries=7, entries=[Entry() for _ in range(7)])
         self.f_mag_rf = Data(name='f_mag_rf', offset=0x70, description='Item to Fire/Flare Magic', nb_entries=10, entries=[Entry() for _ in range(10)])
-        self.l_mag_rf = Data(name='l_mag_rf', offset=0xC0, description='Item to Life Magic', nb_entries=10, entries=[Entry() for _ in range(10)])
+        self.l_mag_rf = Data(name='l_mag_rf', offset=0xC0, description='Item to Life Magic', nb_entries=21, entries=[Entry() for _ in range(21)])
         self.time_mag_rf = Data(name='time_mag_rf', offset=0x168, description='Item to Time Magic', nb_entries=14, entries=[Entry() for _ in range(14)])
         self.st_mag_rf = Data(name='st_mag_rf', offset=0x1D8, description='Item to Status Magic', nb_entries=17, entries=[Entry() for _ in range(17)])
         self.supt_mag_rf = Data(name='supt_mag_rf', offset=0x260, description='Item to Support Magic', nb_entries=20, entries=[Entry() for _ in range(20)])
@@ -78,7 +78,7 @@ class m003bin():
 class m004bin():
     def __init__(self):
         self.name = "m004"
-        self.card_mod = Data(name='card_mod', offset=0x0, description='ICard to Items', nb_entries=110, entries=[Entry()] * 110)
+        self.card_mod = Data(name='card_mod', offset=0x0, description='Card to Items', nb_entries=110, entries=[Entry() for _ in range(110)])
         self.list_data = (self.card_mod,)
 
 
@@ -92,7 +92,6 @@ class BinManager():
         self.font_mgmt = FontManagement()
 
     def read_bin_file(self, file_bin, file_msg):
-        print("readbilfine")
         with open(file_msg, "rb") as file:
             while char := file.read(1):
                 self.file_msg_data.extend(char)
@@ -109,7 +108,9 @@ class BinManager():
                 entry.input_id = int(self.file_bin_data[index + 5])
                 entry.amount_required = int(self.file_bin_data[index + 6])
                 entry.output_id = int(self.file_bin_data[index + 7])
+                # Each text is separated by a 0, so we search till this char (that is removed and replaced by a \n)
                 raw_data_text = self.file_msg_data[entry.text_offset:self.file_msg_data.index(bytes([0]), entry.text_offset)]
+                raw_data_text.extend(bytes(0x02))
                 entry.text = self.font_mgmt.translate_hex_to_str(raw_data_text)
                 index += entry.ENTRY_SIZE
 
@@ -140,19 +141,19 @@ class BinManager():
             current_line+=1 # Line of data description ignored
             for nb_entry, entry in enumerate(data.entries):
                 current_line += 1  # Ignoring the first line that just specify the entry index
-                print(str_read[current_line])
-                print(str_read[current_line].split(f'{self.CHAR_SEP}')[1])
-                entry.text = self.font_mgmt.translate_str_to_hex(str_read[current_line].split(f'{self.CHAR_SEP}')[1])
-                entry.text_offset = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1]).to_bytes(2, byteorder='little')
-                entry.amount_received = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1])
-                entry.unk = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1]).to_bytes(2, byteorder='little')
-                entry.input_id = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1])
-                entry.amount_required = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1])
-                entry.output_id = int(str_read[current_line + 6].split(f'{self.CHAR_SEP}')[1])
+                # Using [:-1] to remove the \n that we manually added
+                text_read = str_read[current_line].split(f'{self.CHAR_SEP}')[1][:-1]
+                entry.text = self.font_mgmt.translate_str_to_hex(text_read)
+                entry.text.extend([0x00])# Adding the 0x00 that have been removed to note the end of the string
+                entry.text_offset = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2, byteorder='little')
+                entry.amount_received = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1][:-1])
+                entry.unk = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2, byteorder='little')
+                entry.input_id = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
+                entry.amount_required = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1])
+                entry.output_id = int(str_read[current_line + 6].split(f'{self.CHAR_SEP}')[1][:-1])
                 current_line += 7
-
+            current_line += 1 # The \n alone added
     def write_pandemona_file(self, path_output):
-        print("Writing pandeoma file")
         str_output = ""
         for index_data, data in enumerate(self.bin.list_data):
             str_output+=  f"Data n°{index_data}, name:{data.name}, data description:{data.description}\n"
@@ -167,5 +168,6 @@ class BinManager():
                 str_entry += f"Amount required{self.CHAR_SEP}{entry.amount_required}\n"
                 str_entry += f"Output ID{self.CHAR_SEP}{entry.output_id}\n"
                 str_output+=str_entry
+            str_output+='\n'
         with open(os.path.join(path_output, self.bin.name + '.pandemona'), "w") as file:
             file.write(str_output)

@@ -1,0 +1,12 @@
+.venv/Scripts/pyinstaller.exe -n Pandemona -F --specpath release/build --distpath release --workpath release/build --paths .venv/Lib/site-packages main.py;
+mkdir -p release/Pandemona-0.x.x;
+cp -R Resources release/Pandemona-0.x.x/;
+cp -R InputFiles release/Pandemona-0.x.x/;
+mkdir -p release/Pandemona-0.x.x/OutputFiles;
+cp release/*.exe release/Pandemona-0.x.x/;
+cd release/Pandemona-0.x.x;
+"C:\Program Files\7-Zip\7z.exe" a -tzip ../Pandemona-0.x.x.zip .;
+cd ..;
+rm -r Pandemona-0.x.x;
+rm -r build;
+rm *.exe;
