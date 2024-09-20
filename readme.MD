@@ -1,7 +1,3 @@
-To launch it, you need to have your m00x.bin and m00x.msg and mngrp.bin files in InputFiles folder, and have the .exe in the parent folder.
-Double click on it, it will add pandemona files in a Pandemona folder. Modify them (there are txt files) and then click again on the .exe.
-The program will detect that there is pandemona files, and will create in the Output folder the .msg and .bin corresponding.
-
 @segachief instruction:
 1) Replace the default files within InputFiles with your modded versions of those files (m000.bin, m000.msg, etc.) and then run the Pandemona.exe. You can get the m000.bin, etc. by using an archive tool such as Deling from the game's files.
 
