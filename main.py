@@ -6,10 +6,6 @@ import shutil
 from FF8GameData.gamedata import GameData
 from data import m000bin, BinManager, m001bin, m002bin, m003bin, m004bin
 
-m000_data_list = ['t_mag_rf', 'i_mag_rf', 'f_mag_rf', 'l_mag_rf', 'time_mag_rf', 'st_mag_rf', 'supt_mag_rf',
-                  'forbid_mag_rf']
-m000_entry_list = ['offset', 'amount_received', 'input_item_id', 'l_mag_rf', 'time_mag_rf', 'st_mag_rf', 'supt_mag_rf',
-                   'forbid_mag_rf']
 input_folder = '1 - InputFiles'
 pandemona_folder = '2 - PandemonaFiles'
 output_folder = '3 - OutputFiles'

@@ -38,35 +38,55 @@ class Data():
 class m000bin():
     def __init__(self):
         self.name = "m000"
-        self.t_mag_rf = Data(name='t_mag_rf', offset=0x0, description='Item to Thunder/Wind Magic', nb_entries=7, entries=[Entry() for _ in range(7)])
-        self.i_mag_rf = Data(name='i_mag_rf', offset=0x38, description='Item to Ice/Water Magic', nb_entries=7, entries=[Entry() for _ in range(7)])
-        self.f_mag_rf = Data(name='f_mag_rf', offset=0x70, description='Item to Fire/Flare Magic', nb_entries=10, entries=[Entry() for _ in range(10)])
-        self.l_mag_rf = Data(name='l_mag_rf', offset=0xC0, description='Item to Life Magic', nb_entries=21, entries=[Entry() for _ in range(21)])
-        self.time_mag_rf = Data(name='time_mag_rf', offset=0x168, description='Item to Time Magic', nb_entries=14, entries=[Entry() for _ in range(14)])
-        self.st_mag_rf = Data(name='st_mag_rf', offset=0x1D8, description='Item to Status Magic', nb_entries=17, entries=[Entry() for _ in range(17)])
-        self.supt_mag_rf = Data(name='supt_mag_rf', offset=0x260, description='Item to Support Magic', nb_entries=20, entries=[Entry() for _ in range(20)])
-        self.forbid_mag_rf = Data(name='forbid_mag_rf', offset=0x300, description='Item to Support Magic', nb_entries=6, entries=[Entry() for _ in range(6)])
-        self.list_data = (self.t_mag_rf, self.i_mag_rf, self.f_mag_rf, self.l_mag_rf, self.time_mag_rf, self.st_mag_rf, self.supt_mag_rf, self.forbid_mag_rf)
+        self.t_mag_rf = Data(name='t_mag_rf', offset=0x0, description='Item to Thunder/Wind Magic', nb_entries=7,
+                             entries=[Entry() for _ in range(7)])
+        self.i_mag_rf = Data(name='i_mag_rf', offset=0x38, description='Item to Ice/Water Magic', nb_entries=7,
+                             entries=[Entry() for _ in range(7)])
+        self.f_mag_rf = Data(name='f_mag_rf', offset=0x70, description='Item to Fire/Flare Magic', nb_entries=10,
+                             entries=[Entry() for _ in range(10)])
+        self.l_mag_rf = Data(name='l_mag_rf', offset=0xC0, description='Item to Life Magic', nb_entries=21,
+                             entries=[Entry() for _ in range(21)])
+        self.time_mag_rf = Data(name='time_mag_rf', offset=0x168, description='Item to Time Magic', nb_entries=14,
+                                entries=[Entry() for _ in range(14)])
+        self.st_mag_rf = Data(name='st_mag_rf', offset=0x1D8, description='Item to Status Magic', nb_entries=17,
+                              entries=[Entry() for _ in range(17)])
+        self.supt_mag_rf = Data(name='supt_mag_rf', offset=0x260, description='Item to Support Magic', nb_entries=20,
+                                entries=[Entry() for _ in range(20)])
+        self.forbid_mag_rf = Data(name='forbid_mag_rf', offset=0x300, description='Item to Support Magic', nb_entries=6,
+                                  entries=[Entry() for _ in range(6)])
+        self.list_data = (
+        self.t_mag_rf, self.i_mag_rf, self.f_mag_rf, self.l_mag_rf, self.time_mag_rf, self.st_mag_rf, self.supt_mag_rf,
+        self.forbid_mag_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.SPELL
         self.mngrp_bin_offset = 0x21F000
         self.mngrp_msg_offset = 0x221800
 
+
 @dataclass
 class m001bin():
     def __init__(self):
         self.name = "m001"
-        self.recov_med_rf = Data(name='recov_med_rf', offset=0x0, description='Item to Recovery Items', nb_entries=9, entries=[Entry() for _ in range(9)])
-        self.st_med_rf = Data(name='st_med_rf', offset=0x48, description='Item to Status Removal Items', nb_entries=12, entries=[Entry() for _ in range(12)])
-        self.amo_rf = Data(name='amo_rf', offset=0xA8, description='Item to Ammo Item', nb_entries=16, entries=[Entry() for _ in range(16)])
-        self.forbid_med_rf = Data(name='forbid_med_rf', offset=0x128, description='Item to Forbidden Medicine', nb_entries=20,
+        self.recov_med_rf = Data(name='recov_med_rf', offset=0x0, description='Item to Recovery Items', nb_entries=9,
+                                 entries=[Entry() for _ in range(9)])
+        self.st_med_rf = Data(name='st_med_rf', offset=0x48, description='Item to Status Removal Items', nb_entries=12,
+                              entries=[Entry() for _ in range(12)])
+        self.amo_rf = Data(name='amo_rf', offset=0xA8, description='Item to Ammo Item', nb_entries=16,
+                           entries=[Entry() for _ in range(16)])
+        self.forbid_med_rf = Data(name='forbid_med_rf', offset=0x128, description='Item to Forbidden Medicine',
+                                  nb_entries=20,
                                   entries=[Entry() for _ in range(20)])
-        self.gfrecov_med_rf = Data(name='gfrecov_med_rf', offset=0x1C8, description='Item to GF Recovery Items', nb_entries=12,
+        self.gfrecov_med_rf = Data(name='gfrecov_med_rf', offset=0x1C8, description='Item to GF Recovery Items',
+                                   nb_entries=12,
                                    entries=[Entry() for _ in range(12)])
-        self.gfabl_med_rf = Data(name='gfabl_med_rf', offset=0x228, description='Item to GF Ability Medicine Items', nb_entries=42,
+        self.gfabl_med_rf = Data(name='gfabl_med_rf', offset=0x228, description='Item to GF Ability Medicine Items',
+                                 nb_entries=42,
                                  entries=[Entry() for _ in range(42)])
-        self.tool_rf = Data(name='tool_rf', offset=0x378, description='Item to Tool Items', nb_entries=32, entries=[Entry() for _ in range(32)])
-        self.list_data = (self.recov_med_rf, self.st_med_rf, self.amo_rf, self.forbid_med_rf, self.gfrecov_med_rf, self.gfabl_med_rf, self.tool_rf)
+        self.tool_rf = Data(name='tool_rf', offset=0x378, description='Item to Tool Items', nb_entries=32,
+                            entries=[Entry() for _ in range(32)])
+        self.list_data = (
+        self.recov_med_rf, self.st_med_rf, self.amo_rf, self.forbid_med_rf, self.gfrecov_med_rf, self.gfabl_med_rf,
+        self.tool_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.ITEM
         self.mngrp_bin_offset = 0x21F800
@@ -77,9 +97,11 @@ class m001bin():
 class m002bin():
     def __init__(self):
         self.name = "m002"
-        self.mid_mag_rf = Data(name='mid_mag_rf', offset=0x0, description='Upgrade Magic from low level to mid level', nb_entries=4,
+        self.mid_mag_rf = Data(name='mid_mag_rf', offset=0x0, description='Upgrade Magic from low level to mid level',
+                               nb_entries=4,
                                entries=[Entry() for _ in range(4)])
-        self.high_mag_rf = Data(name='high_mag_rf', offset=0x20, description='Upgrade Magic from mid level to high level', nb_entries=6,
+        self.high_mag_rf = Data(name='high_mag_rf', offset=0x20,
+                                description='Upgrade Magic from mid level to high level', nb_entries=6,
                                 entries=[Entry() for _ in range(6)])
         self.list_data = (self.mid_mag_rf, self.high_mag_rf)
         self.input_id = TypeId.ITEM
@@ -92,7 +114,8 @@ class m002bin():
 class m003bin():
     def __init__(self):
         self.name = "m003"
-        self.med_lv_up = Data(name='med_lv_up', offset=0x0, description='Level up low level recovery items to higher items', nb_entries=12,
+        self.med_lv_up = Data(name='med_lv_up', offset=0x0,
+                              description='Level up low level recovery items to higher items', nb_entries=12,
                               entries=[Entry() for _ in range(12)])
         self.list_data = (self.med_lv_up,)
         self.input_id = TypeId.ITEM
@@ -105,7 +128,8 @@ class m003bin():
 class m004bin():
     def __init__(self):
         self.name = "m004"
-        self.card_mod = Data(name='card_mod', offset=0x0, description='Card to Items', nb_entries=110, entries=[Entry() for _ in range(110)])
+        self.card_mod = Data(name='card_mod', offset=0x0, description='Card to Items', nb_entries=110,
+                             entries=[Entry() for _ in range(110)])
         self.list_data = (self.card_mod,)
         self.input_id = TypeId.CARD
         self.output_id = TypeId.ITEM
@@ -149,11 +173,14 @@ class BinManager():
                 entry.text_offset = int.from_bytes(bytearray(self.file_bin_data[index:index + 2]), byteorder='little')
                 entry.amount_received = int(self.file_bin_data[index + 2])
                 entry.unk = int.from_bytes(bytearray(self.file_bin_data[index + 3:index + 5]), byteorder='little')
-                entry.input_id = str(int(self.file_bin_data[index + 5])) + ':' + self.input_table[int(self.file_bin_data[index + 5])]['name']
+                entry.input_id = str(int(self.file_bin_data[index + 5])) + ':' + \
+                                 self.input_table[int(self.file_bin_data[index + 5])]['name']
                 entry.amount_required = int(self.file_bin_data[index + 6])
-                entry.output_id = str(int(self.file_bin_data[index + 7])) + ':' + self.output_table[int(self.file_bin_data[index + 7])]['name']
+                entry.output_id = str(int(self.file_bin_data[index + 7])) + ':' + \
+                                  self.output_table[int(self.file_bin_data[index + 7])]['name']
                 # Each text is separated by a 0, so we search till this char (that is removed and replaced by a \n)
-                raw_data_text = self.file_msg_data[entry.text_offset:self.file_msg_data.index(bytes([0]), entry.text_offset)]
+                raw_data_text = self.file_msg_data[
+                                entry.text_offset:self.file_msg_data.index(bytes([0]), entry.text_offset)]
                 raw_data_text.extend(bytes(0x02))
                 entry.text = self.game_data.translate_hex_to_str(raw_data_text)
                 index += entry.ENTRY_SIZE
@@ -178,8 +205,16 @@ class BinManager():
         with open(file_mngrp, "rb") as file:
             self.file_mngrp_data.extend(file.read())
 
-        self.file_mngrp_data[self.bin.mngrp_bin_offset:self.bin.mngrp_bin_offset+len(self.file_bin_data)] = self.file_bin_data
-        self.file_mngrp_data[self.bin.mngrp_msg_offset:self.bin.mngrp_msg_offset+len(self.file_msg_data)] = self.file_msg_data
+        end_mngrp_data = self.file_mngrp_data[self.bin.mngrp_msg_offset:]
+        print(len(self.file_mngrp_data))
+        print(len(end_mngrp_data))
+        self.file_mngrp_data = self.file_mngrp_data[0:self.bin.mngrp_bin_offset]
+        self.file_mngrp_data.extend(self.file_bin_data)
+        print(len(self.file_mngrp_data))
+        self.file_mngrp_data.extend(self.file_msg_data)
+        print(len(self.file_mngrp_data))
+        self.file_mngrp_data.extend(end_mngrp_data)
+        print(len(self.file_mngrp_data))
         with open(file_mngrp, "wb") as file:
             file.write(self.file_mngrp_data)
 
@@ -202,8 +237,9 @@ class BinManager():
                 entry.amount_required = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1][:-1])
                 entry.output_id = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
                 entry.amount_received = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
-                entry.unk = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2, byteorder='little')
-                text_offset+=len(entry.text)
+                entry.unk = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2,
+                                                                                                       byteorder='little')
+                text_offset += len(entry.text)
                 current_line += 6
             current_line += 1  # The \n alone added
 
