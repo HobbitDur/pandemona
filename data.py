@@ -2,8 +2,7 @@ import binascii
 import os
 from dataclasses import dataclass
 
-from font import FontManagement
-from gamedata import GameData
+from FF8GameData.gamedata import GameData
 
 
 @dataclass
@@ -122,19 +121,19 @@ class BinManager():
         self.file_bin_data = bytearray()
         self.file_msg_data = bytearray()
         self.file_mngrp_data = bytearray()
-        self.font_mgmt = FontManagement()
+        self.game_data = game_data
         if bin.input_id == TypeId.CARD:
-            self.input_table = game_data.card_values
+            self.input_table = game_data.card_data_json["card_info"]
         elif bin.input_id == TypeId.SPELL:
-            self.input_table = game_data.magic_values
+            self.input_table = game_data.magic_data_json["magic"]
         elif bin.input_id == TypeId.ITEM:
-            self.input_table = game_data.item_values
+            self.input_table = game_data.item_data_json['items']
         if bin.output_id == TypeId.CARD:
-            self.output_table = game_data.card_values
+            self.output_table = game_data.card_data_json["card_info"]
         elif bin.output_id == TypeId.SPELL:
-            self.output_table = game_data.magic_values
+            self.output_table = game_data.magic_data_json["magic"]
         elif bin.output_id == TypeId.ITEM:
-            self.output_table = game_data.item_values
+            self.output_table = game_data.item_data_json['items']
 
     def read_bin_file(self, file_bin, file_msg):
         with open(file_msg, "rb") as file:
@@ -150,13 +149,13 @@ class BinManager():
                 entry.text_offset = int.from_bytes(bytearray(self.file_bin_data[index:index + 2]), byteorder='little')
                 entry.amount_received = int(self.file_bin_data[index + 2])
                 entry.unk = int.from_bytes(bytearray(self.file_bin_data[index + 3:index + 5]), byteorder='little')
-                entry.input_id = self.input_table[int(self.file_bin_data[index + 5])]['ref']
+                entry.input_id = str(int(self.file_bin_data[index + 5])) + ':' + self.input_table[int(self.file_bin_data[index + 5])]['name']
                 entry.amount_required = int(self.file_bin_data[index + 6])
-                entry.output_id = self.output_table[int(self.file_bin_data[index + 7])]['ref']
+                entry.output_id = str(int(self.file_bin_data[index + 7])) + ':' + self.output_table[int(self.file_bin_data[index + 7])]['name']
                 # Each text is separated by a 0, so we search till this char (that is removed and replaced by a \n)
                 raw_data_text = self.file_msg_data[entry.text_offset:self.file_msg_data.index(bytes([0]), entry.text_offset)]
                 raw_data_text.extend(bytes(0x02))
-                entry.text = self.font_mgmt.translate_hex_to_str(raw_data_text)
+                entry.text = self.game_data.translate_hex_to_str(raw_data_text)
                 index += entry.ENTRY_SIZE
 
     def write_bin_file(self, file_bin, file_msg, file_mngrp):
@@ -179,13 +178,13 @@ class BinManager():
         with open(file_mngrp, "rb") as file:
             self.file_mngrp_data.extend(file.read())
 
-        self.file_mngrp_data[self.bin.mngrp_bin_offset:] = self.file_bin_data
-        self.file_mngrp_data[self.bin.mngrp_msg_offset:] = self.file_msg_data
+        self.file_mngrp_data[self.bin.mngrp_bin_offset:self.bin.mngrp_bin_offset+len(self.file_bin_data)] = self.file_bin_data
+        self.file_mngrp_data[self.bin.mngrp_msg_offset:self.bin.mngrp_msg_offset+len(self.file_msg_data)] = self.file_msg_data
         with open(file_mngrp, "wb") as file:
             file.write(self.file_mngrp_data)
 
     def read_pandemona_file(self, path_input):
-        with open(os.path.join(path_input, self.bin.name + '.pandemona'), "r") as file:
+        with open(os.path.join(path_input, self.bin.name + '.pandemona'), "r", encoding="utf8") as file:
             str_read = file.readlines()
 
         current_line = 0
@@ -196,7 +195,7 @@ class BinManager():
                 current_line += 1  # Ignoring the first line that just specify the entry index
                 # Using [:-1] to remove the \n that we manually added
                 text_read = str_read[current_line].split(f'{self.CHAR_SEP}')[1][:-1]
-                entry.text = self.font_mgmt.translate_str_to_hex(text_read)
+                entry.text = self.game_data.translate_str_to_hex(text_read)
                 entry.text.extend([0x00])  # Adding the 0x00 that have been removed to note the end of the string
                 entry.text_offset = text_offset.to_bytes(2, byteorder='little')
                 entry.input_id = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
@@ -223,5 +222,5 @@ class BinManager():
                 str_entry += f"unk{self.CHAR_SEP}{entry.unk}\n"
                 str_output += str_entry
             str_output += '-----------------------------------------------------------------\n'
-        with open(os.path.join(path_output, self.bin.name + '.pandemona'), "w") as file:
+        with open(os.path.join(path_output, self.bin.name + '.pandemona'), "w", encoding="utf8") as file:
             file.write(str_output)

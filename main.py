@@ -3,8 +3,8 @@ import glob
 import os
 import shutil
 
+from FF8GameData.gamedata import GameData
 from data import m000bin, BinManager, m001bin, m002bin, m003bin, m004bin
-from gamedata import GameData
 
 m000_data_list = ['t_mag_rf', 'i_mag_rf', 'f_mag_rf', 'l_mag_rf', 'time_mag_rf', 'st_mag_rf', 'supt_mag_rf',
                   'forbid_mag_rf']
@@ -14,7 +14,7 @@ input_folder = '1 - InputFiles'
 pandemona_folder = '2 - PandemonaFiles'
 output_folder = '3 - OutputFiles'
 
-# The m00x.bin files consist of a data for each abilities. Each "data (abilities) has an entry of x bytes.
+# The m00x.bin files consist of a data for each ability. Each "data (abilities) has an entry of x bytes.
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(prog="Pandemona", description="This program read m00x.bin files")
     args = parser.parse_args()
@@ -37,7 +37,10 @@ if __name__ == '__main__':
         reading_pandemona = False
 
 
-    game_data = GameData()
+    game_data = GameData("FF8GameData")
+    game_data.load_item_data()
+    game_data.load_magic_data()
+    game_data.load_card_data()
     for file in list_to_analyze:
         if 'm000' in file:
             bin_data = m000bin()
