@@ -1,3 +1,7 @@
+# Wiki
+Check the [Wiki](https://github.com/HobbitDur/pandemona/wiki) for info detail
+
+# How to use
 @segachief instruction:
 1) Replace the default files within InputFiles with your modded versions of those files (m000.bin, m000.msg, etc.) and then run the Pandemona.exe. You can get the m000.bin, etc. by using an archive tool such as Deling from the game's files.
 
