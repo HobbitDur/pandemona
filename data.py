@@ -206,15 +206,10 @@ class BinManager():
             self.file_mngrp_data.extend(file.read())
 
         end_mngrp_data = self.file_mngrp_data[self.bin.mngrp_msg_offset:]
-        print(len(self.file_mngrp_data))
-        print(len(end_mngrp_data))
         self.file_mngrp_data = self.file_mngrp_data[0:self.bin.mngrp_bin_offset]
         self.file_mngrp_data.extend(self.file_bin_data)
-        print(len(self.file_mngrp_data))
         self.file_mngrp_data.extend(self.file_msg_data)
-        print(len(self.file_mngrp_data))
         self.file_mngrp_data.extend(end_mngrp_data)
-        print(len(self.file_mngrp_data))
         with open(file_mngrp, "wb") as file:
             file.write(self.file_mngrp_data)
 
