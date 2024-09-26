@@ -37,30 +37,14 @@ if __name__ == '__main__':
     game_data.load_item_data()
     game_data.load_magic_data()
     game_data.load_card_data()
-    for file in list_to_analyze:
-        if 'm000' in file:
-            bin_data = m000bin()
-        elif 'm001' in file:
-            bin_data = m001bin()
-        elif 'm002' in file:
-            bin_data = m002bin()
-        elif 'm003' in file:
-            bin_data = m003bin()
-        elif 'm004' in file:
-            bin_data = m004bin()
-        elif 'mngrp' in file:
-            continue
-        else:
-            print("Unexpected file {}".format(file))
-            continue
 
-        bin_manager = BinManager(bin_data, game_data)
-        file_name = file.split(os.sep)[1].split('.')[0]
-        if reading_pandemona:
-            bin_manager.read_pandemona_file(pandemona_folder)
-            pre_file_name = os.path.join(output_folder, file_name)
-            bin_manager.write_bin_file(pre_file_name + ".bin", pre_file_name + ".msg", os.path.join(output_folder, "mngrp.bin"))
-        else:
-            pre_file_name = os.path.join(input_folder, file_name)
-            bin_manager.read_bin_file(pre_file_name + ".bin",pre_file_name + ".msg")
-            bin_manager.write_pandemona_file(pandemona_folder)
+    bin_manager = BinManager(game_data)
+    if reading_pandemona:
+        bin_manager.read_pandemona_file(pandemona_folder)
+        pre_file_name = os.path.join(output_folder, file_name)
+        bin_manager.write_bin_file(pre_file_name + ".bin", pre_file_name + ".msg", os.path.join(output_folder, "mngrp.bin"))
+    else:
+        print("Read mngrp !")
+        bin_manager.read_mngrp_file(os.path.join(input_folder, "mngrp.bin"))
+        print("Writing pandemona !")
+        bin_manager.write_pandemona_file(pandemona_folder)

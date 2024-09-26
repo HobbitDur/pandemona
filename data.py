@@ -54,13 +54,13 @@ class m000bin():
                                 entries=[Entry() for _ in range(20)])
         self.forbid_mag_rf = Data(name='forbid_mag_rf', offset=0x300, description='Item to Support Magic', nb_entries=6,
                                   entries=[Entry() for _ in range(6)])
-        self.list_data = (
-        self.t_mag_rf, self.i_mag_rf, self.f_mag_rf, self.l_mag_rf, self.time_mag_rf, self.st_mag_rf, self.supt_mag_rf,
-        self.forbid_mag_rf)
+        self.list_data = (self.t_mag_rf, self.i_mag_rf, self.f_mag_rf, self.l_mag_rf, self.time_mag_rf, self.st_mag_rf, self.supt_mag_rf, self.forbid_mag_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.SPELL
         self.mngrp_bin_offset = 0x21F000
         self.mngrp_msg_offset = 0x221800
+        self.mngrp_bin_size = 0x800
+        self.mngrp_msg_size = 0x1800
 
 
 @dataclass
@@ -84,13 +84,13 @@ class m001bin():
                                  entries=[Entry() for _ in range(42)])
         self.tool_rf = Data(name='tool_rf', offset=0x378, description='Item to Tool Items', nb_entries=32,
                             entries=[Entry() for _ in range(32)])
-        self.list_data = (
-        self.recov_med_rf, self.st_med_rf, self.amo_rf, self.forbid_med_rf, self.gfrecov_med_rf, self.gfabl_med_rf,
-        self.tool_rf)
+        self.list_data = (self.recov_med_rf, self.st_med_rf, self.amo_rf, self.forbid_med_rf, self.gfrecov_med_rf, self.gfabl_med_rf, self.tool_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.ITEM
         self.mngrp_bin_offset = 0x21F800
         self.mngrp_msg_offset = 0x223000
+        self.mngrp_bin_size = 0x800
+        self.mngrp_msg_size = 0x2000
 
 
 @dataclass
@@ -108,7 +108,8 @@ class m002bin():
         self.output_id = TypeId.SPELL
         self.mngrp_bin_offset = 0x220000
         self.mngrp_msg_offset = 0x225000
-
+        self.mngrp_bin_size = 0x800
+        self.mngrp_msg_size = 0x800
 
 @dataclass
 class m003bin():
@@ -122,6 +123,8 @@ class m003bin():
         self.output_id = TypeId.ITEM
         self.mngrp_bin_offset = 0x220800
         self.mngrp_msg_offset = 0x225800
+        self.mngrp_bin_size = 0x800
+        self.mngrp_msg_size = 0x800
 
 
 @dataclass
@@ -135,123 +138,144 @@ class m004bin():
         self.output_id = TypeId.ITEM
         self.mngrp_bin_offset = 0x221000
         self.mngrp_msg_offset = 0x226000
+        self.mngrp_bin_size = 0x800
+        self.mngrp_msg_size = 0x1800
 
 
 class BinManager():
     CHAR_SEP = '>'
 
-    def __init__(self, bin, game_data: GameData):
-        self.bin = bin
-        self.file_bin_data = bytearray()
-        self.file_msg_data = bytearray()
+    def __init__(self, game_data: GameData):
+        self.m000bin = m000bin()
+        self.m001bin = m001bin()
+        self.m002bin = m002bin()
+        self.m003bin = m003bin()
+        self.m004bin = m004bin()
+        self.bin_list = (self.m000bin, self.m001bin, self.m002bin, self.m003bin,self.m004bin)
+
         self.file_mngrp_data = bytearray()
         self.game_data = game_data
-        if bin.input_id == TypeId.CARD:
-            self.input_table = game_data.card_data_json["card_info"]
-        elif bin.input_id == TypeId.SPELL:
-            self.input_table = game_data.magic_data_json["magic"]
-        elif bin.input_id == TypeId.ITEM:
-            self.input_table = game_data.item_data_json['items']
-        if bin.output_id == TypeId.CARD:
-            self.output_table = game_data.card_data_json["card_info"]
-        elif bin.output_id == TypeId.SPELL:
-            self.output_table = game_data.magic_data_json["magic"]
-        elif bin.output_id == TypeId.ITEM:
-            self.output_table = game_data.item_data_json['items']
 
-    def read_bin_file(self, file_bin, file_msg):
-        with open(file_msg, "rb") as file:
+
+    def read_mngrp_file(self, file_mngrp):
+        with open(file_mngrp, "rb") as file:
             while char := file.read(1):
-                self.file_msg_data.extend(char)
-        with open(file_bin, "rb") as file:
-            for char in file:
-                self.file_bin_data.extend(char)
+                self.file_mngrp_data.extend(char)
+        
+        for bin_data in self.bin_list:
+            if bin_data.input_id == TypeId.CARD:
+                input_table = self.game_data.card_data_json["card_info"]
+            elif bin_data.input_id == TypeId.SPELL:
+                input_table = self.game_data.magic_data_json["magic"]
+            elif bin_data.input_id == TypeId.ITEM:
+                input_table = self.game_data.item_data_json['items']
+            else:
+                print("Error reading input table")
+                exit(0)
+            if bin_data.output_id == TypeId.CARD:
+                output_table = self.game_data.card_data_json["card_info"]
+            elif bin_data.output_id == TypeId.SPELL:
+                output_table = self.game_data.magic_data_json["magic"]
+            elif bin_data.output_id == TypeId.ITEM:
+                output_table = self.game_data.item_data_json['items']
+            else:
+                print("Error reading output table")
+                exit(0)
+            file_bin_data = self.file_mngrp_data[bin_data.mngrp_bin_offset:bin_data.mngrp_bin_size]
+            for data in bin_data.list_data:
+                index = data.offset
+                for entry in data.entries:
+                    entry.text_offset = int.from_bytes(bytearray(file_bin_data[index:index + 2]), byteorder='little')
+                    entry.amount_received = int(file_bin_data[index + 2])
+                    entry.unk = int.from_bytes(bytearray(file_bin_data[index + 3:index + 5]), byteorder='little')
+                    entry.input_id = str(int(file_bin_data[index + 5])) + ':' + input_table[int(file_bin_data[index + 5])]['name']
+                    entry.amount_required = int(file_bin_data[index + 6])
+                    entry.output_id = str(int(file_bin_data[index + 7])) + ':' + output_table[int(file_bin_data[index + 7])]['name']
+        for bin_data in self.bin_list:
+            file_msg_data = self.file_mngrp_data[bin_data.mngrp_msg_offset:bin_data.mngrp_msg_size]
+            for data in bin_data.list_data:
+                for i in range(len(data.entries)):
+                    if i == len(data.entries)--1:
+                        end_offset = len(file_msg_data)
+                    else:
+                        end_offset= data.entries[i + 1].text_offset
+                    raw_data_text = file_msg_data[
+                                    data.entries[i].text_offset:end_offset]
+                    data.entries[i].text = self.game_data.translate_hex_to_str(raw_data_text) + '\n'
 
-        for data in self.bin.list_data:
-            index = data.offset
-            for entry in data.entries:
-                entry.text_offset = int.from_bytes(bytearray(self.file_bin_data[index:index + 2]), byteorder='little')
-                entry.amount_received = int(self.file_bin_data[index + 2])
-                entry.unk = int.from_bytes(bytearray(self.file_bin_data[index + 3:index + 5]), byteorder='little')
-                entry.input_id = str(int(self.file_bin_data[index + 5])) + ':' + \
-                                 self.input_table[int(self.file_bin_data[index + 5])]['name']
-                entry.amount_required = int(self.file_bin_data[index + 6])
-                entry.output_id = str(int(self.file_bin_data[index + 7])) + ':' + \
-                                  self.output_table[int(self.file_bin_data[index + 7])]['name']
-                # Each text is separated by a 0, so we search till this char (that is removed and replaced by a \n)
-                raw_data_text = self.file_msg_data[
-                                entry.text_offset:self.file_msg_data.index(bytes([0]), entry.text_offset)]
-                raw_data_text.extend(bytes(0x02))
-                entry.text = self.game_data.translate_hex_to_str(raw_data_text)
-                index += entry.ENTRY_SIZE
+    def write_bin_file(self, file_mngrp):
+        with open(file_mngrp, "rb") as file:
+            while char := file.read(1):
+                self.file_mngrp_data.extend(char)
 
-    def write_bin_file(self, file_bin, file_msg, file_mngrp):
-        for data in self.bin.list_data:
-            for entry in data.entries:
-                self.file_bin_data.extend(entry.text_offset)
-                self.file_bin_data.extend([entry.amount_received])
-                self.file_bin_data.extend(entry.unk)
-                self.file_bin_data.extend([entry.input_id])
-                self.file_bin_data.extend([entry.amount_required])
-                self.file_bin_data.extend([entry.output_id])
-                self.file_msg_data.extend(entry.text)
-
-        with open(file_bin, "wb") as file:
-            file.write(self.file_bin_data)
-        with open(file_msg, "wb") as file:
-            file.write(self.file_msg_data)
+        file_bin_data = bytearray()
+        file_msg_data = bytearray()
+        for bin_data in self.bin_list:
+            for data in bin_data.list_data:
+                for entry in data.entries:
+                    file_bin_data.extend(entry.text_offset)
+                    file_bin_data.extend([entry.amount_received])
+                    file_bin_data.extend(entry.unk)
+                    file_bin_data.extend([entry.input_id])
+                    file_bin_data.extend([entry.amount_required])
+                    file_bin_data.extend([entry.output_id])
+                    file_msg_data.extend(entry.text)
 
         # MNGRP
-        with open(file_mngrp, "rb") as file:
-            self.file_mngrp_data.extend(file.read())
+        #with open(file_mngrp, "rb") as file:
+        #    self.file_mngrp_data.extend(file.read())
 
-        end_mngrp_data = self.file_mngrp_data[self.bin.mngrp_msg_offset:]
-        self.file_mngrp_data = self.file_mngrp_data[0:self.bin.mngrp_bin_offset]
-        self.file_mngrp_data.extend(self.file_bin_data)
-        self.file_mngrp_data.extend(self.file_msg_data)
+        #
+        end_mngrp_data = self.file_mngrp_data[self.m004bin.mngrp_msg_offset+ self.m004bin.mngrp_msg_size:]
+        self.file_mngrp_data = self.file_mngrp_data[:self.m000bin.mngrp_bin_offset]
+        self.file_mngrp_data.extend(file_bin_data)
+        self.file_mngrp_data.extend(file_msg_data)
         self.file_mngrp_data.extend(end_mngrp_data)
         with open(file_mngrp, "wb") as file:
             file.write(self.file_mngrp_data)
 
     def read_pandemona_file(self, path_input):
-        with open(os.path.join(path_input, self.bin.name + '.pandemona'), "r", encoding="utf8") as file:
-            str_read = file.readlines()
+
 
         current_line = 0
         text_offset = 0
-        for index_data, data in enumerate(self.bin.list_data):
-            current_line += 1  # Line of data description ignored
-            for nb_entry, entry in enumerate(data.entries):
-                current_line += 1  # Ignoring the first line that just specify the entry index
-                # Using [:-1] to remove the \n that we manually added
-                text_read = str_read[current_line].split(f'{self.CHAR_SEP}')[1][:-1]
-                entry.text = self.game_data.translate_str_to_hex(text_read)
-                entry.text.extend([0x00])  # Adding the 0x00 that have been removed to note the end of the string
-                entry.text_offset = text_offset.to_bytes(2, byteorder='little')
-                entry.input_id = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
-                entry.amount_required = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1][:-1])
-                entry.output_id = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
-                entry.amount_received = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
-                entry.unk = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2,
-                                                                                                       byteorder='little')
-                text_offset += len(entry.text)
-                current_line += 6
-            current_line += 1  # The \n alone added
+        for mbin in self.bin_list:
+            with open(os.path.join(path_input, mbin.name + '.pandemona'), "r", encoding="utf8") as file:
+                str_read = file.readlines()
+            for index_data, data in enumerate(mbin.list_data):
+                current_line += 1  # Line of data description ignored
+                for nb_entry, entry in enumerate(data.entries):
+                    current_line += 1  # Ignoring the first line that just specify the entry index
+                    # Using [:-1] to remove the \n that we manually added
+                    text_read = str_read[current_line].split(f'{self.CHAR_SEP}')[1][:-1]
+                    entry.text = self.game_data.translate_str_to_hex(text_read)
+                    entry.text.extend([0x00])  # Adding the 0x00 that have been removed to note the end of the string
+                    entry.text_offset = text_offset.to_bytes(2, byteorder='little')
+                    entry.input_id = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
+                    entry.amount_required = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1][:-1])
+                    entry.output_id = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
+                    entry.amount_received = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
+                    entry.unk = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2,
+                                                                                                           byteorder='little')
+                    text_offset += len(entry.text)
+                    current_line += 6
+                current_line += 1  # The \n alone added
 
     def write_pandemona_file(self, path_output):
         str_output = ""
-        for index_data, data in enumerate(self.bin.list_data):
-            str_output += f"Data n°{index_data}, name:{data.name}, data description:{data.description}\n"
-            for nb_entry, entry in enumerate(data.entries):
-                str_entry = ""
-                str_entry += f"Entry n°{nb_entry}\n"
-                str_entry += f"Text{self.CHAR_SEP}{entry.text}\n"
-                str_entry += f"Input ID{self.CHAR_SEP}{entry.input_id}\n"
-                str_entry += f"Amount required{self.CHAR_SEP}{entry.amount_required}\n"
-                str_entry += f"Output ID{self.CHAR_SEP}{entry.output_id}\n"
-                str_entry += f"Amount received{self.CHAR_SEP}{entry.amount_received}\n"
-                str_entry += f"unk{self.CHAR_SEP}{entry.unk}\n"
-                str_output += str_entry
-            str_output += '-----------------------------------------------------------------\n'
-        with open(os.path.join(path_output, self.bin.name + '.pandemona'), "w", encoding="utf8") as file:
-            file.write(str_output)
+        for mbin in self.bin_list:
+            for index_data, data in enumerate(mbin.list_data):
+                str_output += f"Data n°{index_data}, name:{data.name}, data description:{data.description}\n"
+                for nb_entry, entry in enumerate(data.entries):
+                    str_entry = ""
+                    str_entry += f"Entry n°{nb_entry}\n"
+                    str_entry += f"Text{self.CHAR_SEP}{entry.text}\n"
+                    str_entry += f"Input ID{self.CHAR_SEP}{entry.input_id}\n"
+                    str_entry += f"Amount required{self.CHAR_SEP}{entry.amount_required}\n"
+                    str_entry += f"Output ID{self.CHAR_SEP}{entry.output_id}\n"
+                    str_entry += f"Amount received{self.CHAR_SEP}{entry.amount_received}\n"
+                    str_entry += f"unk{self.CHAR_SEP}{entry.unk}\n"
+                    str_output += str_entry
+                str_output += '-----------------------------------------------------------------\n'
+            with open(os.path.join(path_output, mbin.name + '.pandemona'), "w", encoding="utf8") as file:
+                file.write(str_output)
