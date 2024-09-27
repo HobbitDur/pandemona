@@ -2,7 +2,7 @@ import os
 from FF8GameData.FF8HexReader.mngrp import Mngrp
 from FF8GameData.FF8HexReader.mngrphd import Mngrphd
 from FF8GameData.gamedata import GameData
-from pandemona.dataclass import m000bin, m001bin, m002bin, m003bin, m004bin, TypeId
+from FF8GameData.m00x.dataclass import m000bin, m001bin, m002bin, m003bin, m004bin, TypeId
 
 
 class BinManager:
