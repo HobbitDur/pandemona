@@ -28,6 +28,7 @@ if __name__ == '__main__':
         list_to_analyze = output_pandemona_list
         reading_pandemona = True
         shutil.copyfile(os.path.join(input_folder, "mngrp.bin"), os.path.join(output_folder, "mngrp.bin"))
+        shutil.copyfile(os.path.join(input_folder, "mngrphd.bin"), os.path.join(output_folder, "mngrphd.bin"))
     else:  # Means we want to read .bin and .msg to create pandemona file
         list_to_analyze = glob.glob(os.path.join(input_folder, "*.bin"))
         reading_pandemona = False
@@ -41,10 +42,7 @@ if __name__ == '__main__':
     bin_manager = BinManager(game_data)
     if reading_pandemona:
         bin_manager.read_pandemona_file(pandemona_folder)
-        pre_file_name = os.path.join(output_folder, file_name)
-        bin_manager.write_bin_file(pre_file_name + ".bin", pre_file_name + ".msg", os.path.join(output_folder, "mngrp.bin"))
+        bin_manager.write_mngrp_file(os.path.join(output_folder, "mngrp.bin"), os.path.join(output_folder, "mngrphd.bin"))
     else:
-        print("Read mngrp !")
-        bin_manager.read_mngrp_file(os.path.join(input_folder, "mngrp.bin"))
-        print("Writing pandemona !")
+        bin_manager.read_mngrp_file(os.path.join(input_folder, "mngrp.bin"), os.path.join(input_folder, "mngrphd.bin"))
         bin_manager.write_pandemona_file(pandemona_folder)

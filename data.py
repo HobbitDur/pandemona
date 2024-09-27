@@ -2,6 +2,8 @@ import binascii
 import os
 from dataclasses import dataclass
 
+from FF8GameData.FF8HexReader.mngrp import Mngrp
+from FF8GameData.FF8HexReader.mngrphd import Mngrphd
 from FF8GameData.gamedata import GameData
 
 
@@ -18,11 +20,11 @@ class Entry():
     text_offset_size = 2
     amount_received: int = 0
     unk: int = 0
-    entry_id: int = 0
+    element_in_id: int = 0
     amount_required: int = 0
-    output_id: int = 0
+    element_out_id: int = 0
     ENTRY_SIZE: int = 8  # Nb_element
-    text: str = ""
+    text = "" # Str or list to be given to bytearray
 
 
 @dataclass
@@ -57,10 +59,8 @@ class m000bin():
         self.list_data = (self.t_mag_rf, self.i_mag_rf, self.f_mag_rf, self.l_mag_rf, self.time_mag_rf, self.st_mag_rf, self.supt_mag_rf, self.forbid_mag_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.SPELL
-        self.mngrp_bin_offset = 0x21F000
-        self.mngrp_msg_offset = 0x221800
-        self.mngrp_bin_size = 0x800
-        self.mngrp_msg_size = 0x1800
+        self.mngrp_bin_id = 106
+        self.mngrp_msg_id = 111
 
 
 @dataclass
@@ -87,10 +87,8 @@ class m001bin():
         self.list_data = (self.recov_med_rf, self.st_med_rf, self.amo_rf, self.forbid_med_rf, self.gfrecov_med_rf, self.gfabl_med_rf, self.tool_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.ITEM
-        self.mngrp_bin_offset = 0x21F800
-        self.mngrp_msg_offset = 0x223000
-        self.mngrp_bin_size = 0x800
-        self.mngrp_msg_size = 0x2000
+        self.mngrp_bin_id = 107
+        self.mngrp_msg_id = 112
 
 
 @dataclass
@@ -106,10 +104,8 @@ class m002bin():
         self.list_data = (self.mid_mag_rf, self.high_mag_rf)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.SPELL
-        self.mngrp_bin_offset = 0x220000
-        self.mngrp_msg_offset = 0x225000
-        self.mngrp_bin_size = 0x800
-        self.mngrp_msg_size = 0x800
+        self.mngrp_bin_id = 108
+        self.mngrp_msg_id = 113
 
 @dataclass
 class m003bin():
@@ -121,10 +117,8 @@ class m003bin():
         self.list_data = (self.med_lv_up,)
         self.input_id = TypeId.ITEM
         self.output_id = TypeId.ITEM
-        self.mngrp_bin_offset = 0x220800
-        self.mngrp_msg_offset = 0x225800
-        self.mngrp_bin_size = 0x800
-        self.mngrp_msg_size = 0x800
+        self.mngrp_bin_id = 109
+        self.mngrp_msg_id = 114
 
 
 @dataclass
@@ -136,10 +130,8 @@ class m004bin():
         self.list_data = (self.card_mod,)
         self.input_id = TypeId.CARD
         self.output_id = TypeId.ITEM
-        self.mngrp_bin_offset = 0x221000
-        self.mngrp_msg_offset = 0x226000
-        self.mngrp_bin_size = 0x800
-        self.mngrp_msg_size = 0x1800
+        self.mngrp_bin_id = 110
+        self.mngrp_msg_id = 115
 
 
 class BinManager():
@@ -153,15 +145,22 @@ class BinManager():
         self.m004bin = m004bin()
         self.bin_list = (self.m000bin, self.m001bin, self.m002bin, self.m003bin,self.m004bin)
 
-        self.file_mngrp_data = bytearray()
+        self.mngrp = None
+        self.mngrphd = None
         self.game_data = game_data
 
 
-    def read_mngrp_file(self, file_mngrp):
+    def read_mngrp_file(self, file_mngrp, file_mngrphd):
+        file_mngrp_data = bytearray()
         with open(file_mngrp, "rb") as file:
-            while char := file.read(1):
-                self.file_mngrp_data.extend(char)
-        
+            file_mngrp_data.extend(file.read())
+        file_mngrphd_data = bytearray()
+        with open(file_mngrphd, "rb") as file:
+            file_mngrphd_data.extend(file.read())
+
+        self.mngrphd = Mngrphd(game_data=self.game_data, data_hex=file_mngrphd_data)
+        self.mngrp = Mngrp(game_data=self.game_data, data_hex=file_mngrp_data, header_entry_list=self.mngrphd.get_valid_entry_list())
+
         for bin_data in self.bin_list:
             if bin_data.input_id == TypeId.CARD:
                 input_table = self.game_data.card_data_json["card_info"]
@@ -181,62 +180,69 @@ class BinManager():
             else:
                 print("Error reading output table")
                 exit(0)
-            file_bin_data = self.file_mngrp_data[bin_data.mngrp_bin_offset:bin_data.mngrp_bin_size]
+            file_bin_data = self.mngrp.get_section_by_id(bin_data.mngrp_bin_id).get_data_hex()
             for data in bin_data.list_data:
                 index = data.offset
                 for entry in data.entries:
                     entry.text_offset = int.from_bytes(bytearray(file_bin_data[index:index + 2]), byteorder='little')
                     entry.amount_received = int(file_bin_data[index + 2])
                     entry.unk = int.from_bytes(bytearray(file_bin_data[index + 3:index + 5]), byteorder='little')
-                    entry.input_id = str(int(file_bin_data[index + 5])) + ':' + input_table[int(file_bin_data[index + 5])]['name']
+                    entry.element_in_id = str(int(file_bin_data[index + 5])) + ':' + input_table[int(file_bin_data[index + 5])]['name']
                     entry.amount_required = int(file_bin_data[index + 6])
-                    entry.output_id = str(int(file_bin_data[index + 7])) + ':' + output_table[int(file_bin_data[index + 7])]['name']
-        for bin_data in self.bin_list:
-            file_msg_data = self.file_mngrp_data[bin_data.mngrp_msg_offset:bin_data.mngrp_msg_size]
-            for data in bin_data.list_data:
-                for i in range(len(data.entries)):
-                    if i == len(data.entries)--1:
+                    entry.element_out_id = str(int(file_bin_data[index + 7])) + ':' + output_table[int(file_bin_data[index + 7])]['name']
+                    index += entry.ENTRY_SIZE
+
+        for index_bin_data, bin_data in enumerate(self.bin_list):
+
+            file_msg_data =self.mngrp.get_section_by_id(bin_data.mngrp_msg_id).get_data_hex()
+            for index_data, data in enumerate(bin_data.list_data):
+                for index_data_entry, data_entry in enumerate(data.entries):
+                    if index_data_entry == len(data.entries)-1 and index_data == len(bin_data.list_data)-1 and index_bin_data == len(self.bin_list)-1:
                         end_offset = len(file_msg_data)
+                    elif index_data_entry == len(data.entries)-1 and index_data == len(bin_data.list_data)-1:
+                        end_offset = self.bin_list[index_bin_data+1].list_data[0].entries[0].text_offset
+                    elif index_data_entry == len(data.entries)-1:
+                        end_offset =  self.bin_list[index_bin_data].list_data[index_data+1].entries[0].text_offset
                     else:
-                        end_offset= data.entries[i + 1].text_offset
-                    raw_data_text = file_msg_data[
-                                    data.entries[i].text_offset:end_offset]
-                    data.entries[i].text = self.game_data.translate_hex_to_str(raw_data_text) + '\n'
+                        end_offset= data.entries[index_data_entry + 1].text_offset
+                    raw_data_text = file_msg_data[data_entry.text_offset:end_offset]
+                    self.bin_list[index_bin_data].list_data[index_data].entries[index_data_entry].text = self.game_data.translate_hex_to_str(raw_data_text)
 
-    def write_bin_file(self, file_mngrp):
+    def write_mngrp_file(self, file_mngrp, file_mngrphd):
+        file_mngrp_data = bytearray()
         with open(file_mngrp, "rb") as file:
-            while char := file.read(1):
-                self.file_mngrp_data.extend(char)
+            file_mngrp_data.extend(file.read())
+        file_mngrphd_data = bytearray()
+        with open(file_mngrphd, "rb") as file:
+            file_mngrphd_data.extend(file.read())
 
-        file_bin_data = bytearray()
-        file_msg_data = bytearray()
+        self.mngrphd = Mngrphd(game_data=self.game_data, data_hex=file_mngrphd_data)
+        self.mngrp = Mngrp(game_data=self.game_data, data_hex=file_mngrp_data, header_entry_list=self.mngrphd.get_valid_entry_list())
+
+
         for bin_data in self.bin_list:
+            file_bin_data = bytearray()
+            file_msg_data = bytearray()
             for data in bin_data.list_data:
                 for entry in data.entries:
                     file_bin_data.extend(entry.text_offset)
                     file_bin_data.extend([entry.amount_received])
                     file_bin_data.extend(entry.unk)
-                    file_bin_data.extend([entry.input_id])
+                    file_bin_data.extend([entry.element_in_id])
                     file_bin_data.extend([entry.amount_required])
-                    file_bin_data.extend([entry.output_id])
+                    file_bin_data.extend([entry.element_out_id])
                     file_msg_data.extend(entry.text)
 
-        # MNGRP
-        #with open(file_mngrp, "rb") as file:
-        #    self.file_mngrp_data.extend(file.read())
+            self.mngrp.set_section_by_id(bin_data.mngrp_bin_id, file_bin_data, self.mngrphd)
+            self.mngrp.set_section_by_id(bin_data.mngrp_msg_id, file_msg_data, self.mngrphd)
 
-        #
-        end_mngrp_data = self.file_mngrp_data[self.m004bin.mngrp_msg_offset+ self.m004bin.mngrp_msg_size:]
-        self.file_mngrp_data = self.file_mngrp_data[:self.m000bin.mngrp_bin_offset]
-        self.file_mngrp_data.extend(file_bin_data)
-        self.file_mngrp_data.extend(file_msg_data)
-        self.file_mngrp_data.extend(end_mngrp_data)
         with open(file_mngrp, "wb") as file:
-            file.write(self.file_mngrp_data)
+            file.write(file_mngrp_data)
+
+        with open(file_mngrphd, "wb") as file:
+            file.write(file_mngrphd_data)
 
     def read_pandemona_file(self, path_input):
-
-
         current_line = 0
         text_offset = 0
         for mbin in self.bin_list:
@@ -251,15 +257,15 @@ class BinManager():
                     entry.text = self.game_data.translate_str_to_hex(text_read)
                     entry.text.extend([0x00])  # Adding the 0x00 that have been removed to note the end of the string
                     entry.text_offset = text_offset.to_bytes(2, byteorder='little')
-                    entry.input_id = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
+                    entry.element_in_id = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
                     entry.amount_required = int(str_read[current_line + 2].split(f'{self.CHAR_SEP}')[1][:-1])
-                    entry.output_id = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
+                    entry.element_out_id = int(str_read[current_line + 3].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
                     entry.amount_received = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
                     entry.unk = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2,
                                                                                                            byteorder='little')
-                    text_offset += len(entry.text)
+                    text_offset += len(text_read) +1# +1 for the 0x00 that have been added.
                     current_line += 6
-                current_line += 1  # The \n alone added
+                current_line += 1  # The ------\n alone added
 
     def write_pandemona_file(self, path_output):
         str_output = ""
@@ -270,9 +276,9 @@ class BinManager():
                     str_entry = ""
                     str_entry += f"Entry n°{nb_entry}\n"
                     str_entry += f"Text{self.CHAR_SEP}{entry.text}\n"
-                    str_entry += f"Input ID{self.CHAR_SEP}{entry.input_id}\n"
+                    str_entry += f"Input ID{self.CHAR_SEP}{entry.element_in_id}\n"
                     str_entry += f"Amount required{self.CHAR_SEP}{entry.amount_required}\n"
-                    str_entry += f"Output ID{self.CHAR_SEP}{entry.output_id}\n"
+                    str_entry += f"Output ID{self.CHAR_SEP}{entry.element_out_id}\n"
                     str_entry += f"Amount received{self.CHAR_SEP}{entry.amount_received}\n"
                     str_entry += f"unk{self.CHAR_SEP}{entry.unk}\n"
                     str_output += str_entry
