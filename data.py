@@ -14,12 +14,11 @@ class BinManager:
         self.m002bin = m002bin()
         self.m003bin = m003bin()
         self.m004bin = m004bin()
-        self.bin_list = (self.m000bin, self.m001bin, self.m002bin, self.m003bin,self.m004bin)
+        self.bin_list = (self.m000bin, self.m001bin, self.m002bin, self.m003bin, self.m004bin)
 
         self.mngrp = None
         self.mngrphd = None
         self.game_data = game_data
-
 
     def read_mngrp_file(self, file_mngrp, file_mngrphd):
         file_mngrp_data = bytearray()
@@ -30,8 +29,8 @@ class BinManager:
             file_mngrphd_data.extend(file.read())
 
         self.mngrphd = Mngrphd(game_data=self.game_data, data_hex=file_mngrphd_data)
+        # MNGRP updated
         self.mngrp = Mngrp(game_data=self.game_data, data_hex=file_mngrp_data, header_entry_list=self.mngrphd.get_valid_entry_list())
-
         for bin_data in self.bin_list:
             if bin_data.input_id == TypeId.CARD:
                 input_table = self.game_data.card_data_json["card_info"]
@@ -65,17 +64,17 @@ class BinManager:
 
         for index_bin_data, bin_data in enumerate(self.bin_list):
 
-            file_msg_data =self.mngrp.get_section_by_id(bin_data.mngrp_msg_id).get_data_hex()
+            file_msg_data = self.mngrp.get_section_by_id(bin_data.mngrp_msg_id).get_data_hex()
             for index_data, data in enumerate(bin_data.list_data):
                 for index_data_entry, data_entry in enumerate(data.entries):
-                    if index_data_entry == len(data.entries)-1 and index_data == len(bin_data.list_data)-1 and index_bin_data == len(self.bin_list)-1:
+                    if index_data_entry == len(data.entries) - 1 and index_data == len(bin_data.list_data) - 1 and index_bin_data == len(self.bin_list) - 1:
                         end_offset = len(file_msg_data)
-                    elif index_data_entry == len(data.entries)-1 and index_data == len(bin_data.list_data)-1:
-                        end_offset = self.bin_list[index_bin_data+1].list_data[0].entries[0].text_offset
-                    elif index_data_entry == len(data.entries)-1:
-                        end_offset =  self.bin_list[index_bin_data].list_data[index_data+1].entries[0].text_offset
+                    elif index_data_entry == len(data.entries) - 1 and index_data == len(bin_data.list_data) - 1:
+                        end_offset = self.bin_list[index_bin_data + 1].list_data[0].entries[0].text_offset
+                    elif index_data_entry == len(data.entries) - 1:
+                        end_offset = self.bin_list[index_bin_data].list_data[index_data + 1].entries[0].text_offset
                     else:
-                        end_offset= data.entries[index_data_entry + 1].text_offset
+                        end_offset = data.entries[index_data_entry + 1].text_offset
                     raw_data_text = file_msg_data[data_entry.text_offset:end_offset]
                     self.bin_list[index_bin_data].list_data[index_data].entries[index_data_entry].text = self.game_data.translate_hex_to_str(raw_data_text)
 
@@ -88,8 +87,7 @@ class BinManager:
             file_mngrphd_data.extend(file.read())
 
         self.mngrphd = Mngrphd(game_data=self.game_data, data_hex=file_mngrphd_data)
-        self.mngrp = Mngrp(game_data=self.game_data, data_hex=file_mngrp_data, header_entry_list=self.mngrphd.get_valid_entry_list())
-
+        self.mngrp = Mngrp(game_data=self.game_data, data_hex=file_mngrp_data, header_entry_list=self.mngrphd.get_entry_list())
 
         for bin_data in self.bin_list:
             file_bin_data = bytearray()
@@ -104,14 +102,14 @@ class BinManager:
                     file_bin_data.extend([entry.element_out_id])
                     file_msg_data.extend(entry.text)
 
-            self.mngrp.set_section_by_id(bin_data.mngrp_bin_id, file_bin_data, self.mngrphd)
-            self.mngrp.set_section_by_id(bin_data.mngrp_msg_id, file_msg_data, self.mngrphd)
+            self.mngrp.set_section_by_id_and_bytearray(bin_data.mngrp_bin_id, file_bin_data, self.mngrphd)
+            self.mngrp.set_section_by_id_and_bytearray(bin_data.mngrp_msg_id, file_msg_data, self.mngrphd)
 
         with open(file_mngrp, "wb") as file:
-            file.write(file_mngrp_data)
+            file.write(self.mngrp.get_data_hex())
 
         with open(file_mngrphd, "wb") as file:
-            file.write(file_mngrphd_data)
+            file.write(self.mngrphd.get_data_hex())
 
     def read_pandemona_file(self, path_input):
         current_line = 0
@@ -134,7 +132,7 @@ class BinManager:
                     entry.amount_received = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
                     entry.unk = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2,
                                                                                                            byteorder='little')
-                    text_offset += len(text_read) +1# +1 for the 0x00 that have been added.
+                    text_offset += len(text_read) + 1  # +1 for the 0x00 that have been added.
                     current_line += 6
                 current_line += 1  # The ------\n alone added
 
