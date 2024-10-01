@@ -94,7 +94,7 @@ class BinManager:
 
         self.mngrphd = Mngrphd(game_data=self.game_data, data_hex=file_mngrphd_data)
         self.mngrp = Mngrp(game_data=self.game_data, data_hex=file_mngrp_data, header_entry_list=self.mngrphd.get_entry_list())
-
+        i = 0
         for bin_data in self.bin_list:
             file_bin_data = bytearray()
             file_msg_data = bytearray()
@@ -107,9 +107,32 @@ class BinManager:
                     file_bin_data.extend([entry.amount_required])
                     file_bin_data.extend([entry.element_out_id])
                     file_msg_data.extend(entry.text)
+            print("tutu")
+            print(len(file_bin_data))
+            print(0x800)
+            if i > 0:
+                for _ in range(len(file_bin_data), 0x800):
+                    file_bin_data.extend([0x00])
+            else:
+                for _ in range(len(file_bin_data), 0x7FF):
+                    file_bin_data.extend([0x00])
+            if i == 0 or i == 4:
+                for _ in range(len(file_msg_data), 0x1800):
+                    file_msg_data.extend([0x00])
+            if i == 1:
+                for _ in range(len(file_msg_data), 0x2000):
+                    file_msg_data.extend([0x00])
+            if i == 2 or i == 3:
+                for _ in range(len(file_msg_data), 0x800):
+                    file_msg_data.extend([0x00])
+            print(len(file_bin_data))
+
+            i+=1
 
             self.mngrp.set_section_by_id_and_bytearray(bin_data.mngrp_bin_id, file_bin_data, self.mngrphd)
             self.mngrp.set_section_by_id_and_bytearray(bin_data.mngrp_msg_id, file_msg_data, self.mngrphd)
+            self.mngrp.update_data_hex()
+            self.mngrphd.update_data_hex()
 
         with open(file_mngrp, "wb") as file:
             file.write(self.mngrp.get_data_hex())
@@ -140,6 +163,7 @@ class BinManager:
                     text_read = str_read[current_line].split(f'{self.CHAR_SEP}')[1][:-1]
                     entry.text = self.game_data.translate_str_to_hex(text_read)
                     print(data.entries[index_entry])
+                    print(entry.text)
                     entry.text.extend([0x00])  # Adding the 0x00 that have been removed to note the end of the string
                     entry.text_offset = text_offset.to_bytes(2, byteorder='little')
                     entry.element_in_id = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
@@ -148,7 +172,7 @@ class BinManager:
                     entry.amount_received = int(str_read[current_line + 4].split(f'{self.CHAR_SEP}')[1][:-1])
                     entry.unk = int(str_read[current_line + 5].split(f'{self.CHAR_SEP}')[1][:-1]).to_bytes(2,
                                                                                                            byteorder='little')
-                    text_offset += len(text_read) + 1  # +1 for the 0x00 that have been added.
+                    text_offset += len(entry.text)  # +1 for the 0x00 that have been added.
                     current_line += 6
                     data.entries[index_entry] = entry
                     print(data.entries[index_entry])
