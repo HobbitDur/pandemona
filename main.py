@@ -21,7 +21,7 @@ if __name__ == '__main__':
 
     # Check if pandemona file exist.
     # If in the output folder there is pandemona files, it means we want to create .bin and .msg from it.
-    # If the files doesn't exist, it means we want to create them first from the original files
+    # If the files don't exist, it means we want to create them first from the original files
 
     output_pandemona_list = glob.glob(os.path.join(pandemona_folder, "*.pandemona"))
     if len(output_pandemona_list) > 0:  # Means we want to read pandemona files to write to .msg and .bin

@@ -63,19 +63,25 @@ class BinManager:
                     index += entry.ENTRY_SIZE
 
         for index_bin_data, bin_data in enumerate(self.bin_list):
-
             file_msg_data = self.mngrp.get_section_by_id(bin_data.mngrp_msg_id).get_data_hex()
             for index_data, data in enumerate(bin_data.list_data):
+                print(f"index_data: {index_data}")
+                print(f"data: {data}")
                 for index_data_entry, data_entry in enumerate(data.entries):
-                    if index_data_entry == len(data.entries) - 1 and index_data == len(bin_data.list_data) - 1 and index_bin_data == len(self.bin_list) - 1:
+                    print(f"index_data_entry: {index_data_entry}")
+                    print(f"data_entry: {data_entry}")
+                    if index_data_entry == len(data.entries) - 1 and index_data == len(bin_data.list_data) - 1:
                         end_offset = len(file_msg_data)
-                    elif index_data_entry == len(data.entries) - 1 and index_data == len(bin_data.list_data) - 1:
-                        end_offset = self.bin_list[index_bin_data + 1].list_data[0].entries[0].text_offset
+                        print("2")
                     elif index_data_entry == len(data.entries) - 1:
                         end_offset = self.bin_list[index_bin_data].list_data[index_data + 1].entries[0].text_offset
+                        print("3")
                     else:
                         end_offset = data.entries[index_data_entry + 1].text_offset
+                    print(f"data_entry.text_offset: {data_entry.text_offset}")
+                    print(f"end_offset: {end_offset}")
                     raw_data_text = file_msg_data[data_entry.text_offset:end_offset]
+                    print(f"raw_data_text: {raw_data_text}")
                     self.bin_list[index_bin_data].list_data[index_data].entries[index_data_entry].text = self.game_data.translate_hex_to_str(raw_data_text)
 
     def write_mngrp_file(self, file_mngrp, file_mngrphd):
@@ -112,18 +118,28 @@ class BinManager:
             file.write(self.mngrphd.get_data_hex())
 
     def read_pandemona_file(self, path_input):
-        current_line = 0
-        text_offset = 0
+
         for mbin in self.bin_list:
+            current_line = 0
+            text_offset = 0
+            print(f"mbin: {mbin}")
             with open(os.path.join(path_input, mbin.name + '.pandemona'), "r", encoding="utf8") as file:
                 str_read = file.readlines()
+            print(f"str_read: {str_read}")
             for index_data, data in enumerate(mbin.list_data):
+                print(f"Data: {data}")
                 current_line += 1  # Line of data description ignored
-                for nb_entry, entry in enumerate(data.entries):
+                for index_entry, entry in enumerate(data.entries):
+                    print("Looping !")
+                    print(entry)
+                    print(index_entry)
+                    print(data.entries[index_entry])
                     current_line += 1  # Ignoring the first line that just specify the entry index
+                    print(str_read[current_line])
                     # Using [:-1] to remove the \n that we manually added
                     text_read = str_read[current_line].split(f'{self.CHAR_SEP}')[1][:-1]
                     entry.text = self.game_data.translate_str_to_hex(text_read)
+                    print(data.entries[index_entry])
                     entry.text.extend([0x00])  # Adding the 0x00 that have been removed to note the end of the string
                     entry.text_offset = text_offset.to_bytes(2, byteorder='little')
                     entry.element_in_id = int(str_read[current_line + 1].split(f'{self.CHAR_SEP}')[1][:-1].split(':')[0])
@@ -134,6 +150,8 @@ class BinManager:
                                                                                                            byteorder='little')
                     text_offset += len(text_read) + 1  # +1 for the 0x00 that have been added.
                     current_line += 6
+                    data.entries[index_entry] = entry
+                    print(data.entries[index_entry])
                 current_line += 1  # The ------\n alone added
 
     def write_pandemona_file(self, path_output):
@@ -154,3 +172,4 @@ class BinManager:
                 str_output += '-----------------------------------------------------------------\n'
             with open(os.path.join(path_output, mbin.name + '.pandemona'), "w", encoding="utf8") as file:
                 file.write(str_output)
+            str_output = ""
