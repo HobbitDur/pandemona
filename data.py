@@ -107,26 +107,6 @@ class BinManager:
                     file_bin_data.extend([entry.amount_required])
                     file_bin_data.extend([entry.element_out_id])
                     file_msg_data.extend(entry.text)
-            print("tutu")
-            print(len(file_bin_data))
-            print(0x800)
-            if i > 0:
-                for _ in range(len(file_bin_data), 0x800):
-                    file_bin_data.extend([0x00])
-            else:
-                for _ in range(len(file_bin_data), 0x7FF):
-                    file_bin_data.extend([0x00])
-            if i == 0 or i == 4:
-                for _ in range(len(file_msg_data), 0x1800):
-                    file_msg_data.extend([0x00])
-            if i == 1:
-                for _ in range(len(file_msg_data), 0x2000):
-                    file_msg_data.extend([0x00])
-            if i == 2 or i == 3:
-                for _ in range(len(file_msg_data), 0x800):
-                    file_msg_data.extend([0x00])
-            print(len(file_bin_data))
-
             i+=1
 
             self.mngrp.set_section_by_id_and_bytearray(bin_data.mngrp_bin_id, file_bin_data, self.mngrphd)
