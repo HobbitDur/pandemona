@@ -2,7 +2,8 @@
 Check the [Wiki](https://github.com/HobbitDur/pandemona/wiki) for info detail
 
 # How to use
-@segachief instruction:
+Modified from @segachief instruction:
+0) As you'll have no folder on first download, you can launch it once, it will fail but creates you the correct folders where to place the element.
 1) Put in "1-InputFiles" the mngrp.bin and mngrphd.bin of your modded versions of those files and then run the Pandemona.exe. You can get the .bin files by using an archive tool such as Deling from the game's files.
 
 You will only see an empty CMD window pop up briefly, there is no immediate visual feedback on the processes being undertaken; there is no GUI or editor interface, this step just produces the files that we will modify ourselves in a text editor.
