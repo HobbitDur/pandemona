@@ -109,8 +109,8 @@ class BinManager:
                     file_msg_data.extend(entry.text)
             i+=1
 
-            self.mngrp.set_section_by_id_and_bytearray(bin_data.mngrp_bin_id, file_bin_data, self.mngrphd)
-            self.mngrp.set_section_by_id_and_bytearray(bin_data.mngrp_msg_id, file_msg_data, self.mngrphd)
+            self.mngrp.set_section_by_id_and_bytearray(bin_data.mngrp_bin_id, file_bin_data)
+            self.mngrp.set_section_by_id_and_bytearray(bin_data.mngrp_msg_id, file_msg_data)
             self.mngrp.update_data_hex()
             self.mngrphd.update_data_hex()
 
